@@ -1,0 +1,19 @@
+# Rust build artifacts
+/target
+Cargo.lock
+**/*.rs.bk
+
+# Environment & editor
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+
+# Local developer planning & checkpoints
+tasks.json
+plan.json
+PLAN.md
+DAY-*.md
+.quota_session.json
+.checkpoints/
