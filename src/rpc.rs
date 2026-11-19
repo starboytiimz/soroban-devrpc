@@ -117,6 +117,18 @@ pub struct FeeStatRecord {
     pub p99: u64,
 }
 
+impl FeeStatRecord {
+    pub fn default_mock() -> Self {
+        Self {
+            min: 100,
+            mode: 100,
+            p50: 100,
+            p90: 150,
+            p99: 300,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetFeeStatsResponse {
     pub soroban_inclusion_fee: FeeStatRecord,
