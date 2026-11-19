@@ -198,3 +198,23 @@ fn test_transaction_failure_and_missing_checks() {
     assert!(bad_res.error.is_some());
     assert_eq!(bad_res.error.unwrap().code, -32602);
 }
+
+#[test]
+fn test_snapshot_with_transaction_history() {
+    let mut daemon = DevRpcDaemon::new("Standalone Testnet");
+    let send_req = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!("tx-1"),
+        method: "sendTransaction".to_string(),
+        params: json!({ "transaction": "AAAAAg..." }),
+    };
+    let send_res = daemon.handle_request(send_req);
+    let hash = send_res.result.unwrap()["hash"].as_str().unwrap().to_string();
+
+    let snapshot = LedgerSnapshot::from_daemon(&daemon);
+    let json_str = snapshot.to_json().unwrap();
+
+    let restored = LedgerSnapshot::from_json(&json_str).unwrap();
+    let new_daemon = restored.to_daemon();
+    assert!(new_daemon.transactions.contains_key(&hash));
+}
