@@ -1,7 +1,8 @@
+use crate::events::{ContractEvent, EventFilter};
 use crate::ledger::InMemoryLedger;
 use crate::rpc::{
-    GetTransactionResponse, HealthResponse, JsonRpcRequest, JsonRpcResponse, LatestLedgerResponse,
-    NetworkResponse, SendTransactionResponse,
+    FeeStatRecord, GetEventsResponse, GetFeeStatsResponse, GetTransactionResponse, HealthResponse,
+    JsonRpcRequest, JsonRpcResponse, LatestLedgerResponse, NetworkResponse, SendTransactionResponse,
 };
 use crate::tx::{compute_tx_hash, TransactionRecord, TransactionStatus};
 use serde_json::json;
@@ -10,6 +11,7 @@ use std::collections::HashMap;
 pub struct DevRpcDaemon {
     pub ledger: InMemoryLedger,
     pub transactions: HashMap<String, TransactionRecord>,
+    pub events: Vec<ContractEvent>,
 }
 
 impl DevRpcDaemon {
@@ -17,7 +19,25 @@ impl DevRpcDaemon {
         Self {
             ledger: InMemoryLedger::new(passphrase),
             transactions: HashMap::new(),
+            events: Vec::new(),
         }
+    }
+
+    pub fn record_event(
+        &mut self,
+        contract_id: impl Into<String>,
+        topics: Vec<String>,
+        data: impl Into<String>,
+    ) {
+        let id = format!("{}-{}", self.ledger.sequence, self.events.len() + 1);
+        self.events.push(ContractEvent {
+            contract_id: contract_id.into(),
+            topics,
+            data: data.into(),
+            in_successful_contract_call: true,
+            ledger: self.ledger.sequence,
+            id,
+        });
     }
 
     pub fn advance_ledger(&mut self) -> u32 {
@@ -171,6 +191,45 @@ impl DevRpcDaemon {
                     }
                     None => JsonRpcResponse::error(req.id, -32602, "Missing 'hash' parameter in getTransaction"),
                 }
+            }
+            "getEvents" => {
+                let start_ledger = req
+                    .params
+                    .get("startLedger")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0) as u32;
+
+                let filter = EventFilter {
+                    start_ledger,
+                    contract_ids: Vec::new(),
+                    topics: Vec::new(),
+                };
+
+                let matched: Vec<ContractEvent> = self
+                    .events
+                    .iter()
+                    .filter(|e| filter.matches(e))
+                    .cloned()
+                    .collect();
+
+                let res = GetEventsResponse {
+                    events: matched,
+                    latest_ledger: self.ledger.sequence,
+                };
+                JsonRpcResponse::success(req.id, json!(res))
+            }
+            "getFeeStats" => {
+                let res = GetFeeStatsResponse {
+                    soroban_inclusion_fee: FeeStatRecord {
+                        min: 100,
+                        mode: 100,
+                        p50: 100,
+                        p90: 150,
+                        p99: 300,
+                    },
+                    latest_ledger: self.ledger.sequence,
+                };
+                JsonRpcResponse::success(req.id, json!(res))
             }
             _ => JsonRpcResponse::error(req.id, -32601, format!("Method '{}' not found", req.method)),
         }
