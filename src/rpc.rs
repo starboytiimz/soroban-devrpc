@@ -73,3 +73,30 @@ pub struct LatestLedgerResponse {
     pub protocol_version: u32,
     pub sequence: u32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SendTransactionResponse {
+    pub status: String,
+    pub hash: String,
+    #[serde(rename = "latestLedger")]
+    pub latest_ledger: u32,
+    #[serde(rename = "latestLedgerCloseTime")]
+    pub latest_ledger_close_time: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetTransactionResponse {
+    pub status: String,
+    #[serde(rename = "latestLedger")]
+    pub latest_ledger: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ledger: Option<u32>,
+    #[serde(rename = "envelopeXdr", skip_serializing_if = "Option::is_none")]
+    pub envelope_xdr: Option<String>,
+    #[serde(rename = "resultXdr", skip_serializing_if = "Option::is_none")]
+    pub result_xdr: Option<String>,
+    #[serde(rename = "resultMetaXdr", skip_serializing_if = "Option::is_none")]
+    pub result_meta_xdr: Option<String>,
+    #[serde(rename = "errorMessage", skip_serializing_if = "Option::is_none")]
+    pub error_message: Option<String>,
+}
