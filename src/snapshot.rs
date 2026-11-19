@@ -1,4 +1,6 @@
 use crate::ledger::{InMemoryLedger, LedgerEntryData};
+use crate::server::DevRpcDaemon;
+use crate::tx::TransactionRecord;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -8,6 +10,8 @@ pub struct LedgerSnapshot {
     pub network: String,
     pub sequence: u32,
     pub entries: HashMap<String, LedgerEntryData>,
+    #[serde(default)]
+    pub transactions: HashMap<String, TransactionRecord>,
 }
 
 impl LedgerSnapshot {
@@ -17,6 +21,17 @@ impl LedgerSnapshot {
             network: ledger.network_passphrase.clone(),
             sequence: ledger.sequence,
             entries: ledger.entries.clone(),
+            transactions: HashMap::new(),
+        }
+    }
+
+    pub fn from_daemon(daemon: &DevRpcDaemon) -> Self {
+        Self {
+            version: 2,
+            network: daemon.ledger.network_passphrase.clone(),
+            sequence: daemon.ledger.sequence,
+            entries: daemon.ledger.entries.clone(),
+            transactions: daemon.transactions.clone(),
         }
     }
 
@@ -26,6 +41,14 @@ impl LedgerSnapshot {
             protocol_version: 21,
             network_passphrase: self.network.clone(),
             entries: self.entries.clone(),
+        }
+    }
+
+    pub fn to_daemon(&self) -> DevRpcDaemon {
+        DevRpcDaemon {
+            ledger: self.to_ledger(),
+            transactions: self.transactions.clone(),
+            events: Vec::new(),
         }
     }
 
