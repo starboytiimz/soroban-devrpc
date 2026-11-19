@@ -100,3 +100,26 @@ pub struct GetTransactionResponse {
     #[serde(rename = "errorMessage", skip_serializing_if = "Option::is_none")]
     pub error_message: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetEventsResponse {
+    pub events: Vec<crate::events::ContractEvent>,
+    #[serde(rename = "latestLedger")]
+    pub latest_ledger: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FeeStatRecord {
+    pub min: u64,
+    pub mode: u64,
+    pub p50: u64,
+    pub p90: u64,
+    pub p99: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetFeeStatsResponse {
+    pub soroban_inclusion_fee: FeeStatRecord,
+    #[serde(rename = "latestLedger")]
+    pub latest_ledger: u32,
+}
