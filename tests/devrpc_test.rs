@@ -29,6 +29,22 @@ fn test_get_health_and_network() {
 }
 
 #[test]
+fn test_get_version_rpc_endpoint() {
+    let mut daemon = DevRpcDaemon::new("Testnet");
+    let req = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(1),
+        method: "getVersion".to_string(),
+        params: json!({}),
+    };
+    let res = daemon.handle_request(req);
+    let result = res.result.expect("getVersion should succeed");
+    assert_eq!(result["protocol_version"], 21);
+    assert!(result["version"].as_str().is_some());
+    assert_eq!(result["commit_hash"], "mock-commit-hash");
+}
+
+#[test]
 fn test_ledger_entries_query() {
     let mut daemon = DevRpcDaemon::new("Standalone Testnet");
     daemon.ledger.set_entry("ENTRY_KEY_1", "VAL_XDR_DATA", 2000);
