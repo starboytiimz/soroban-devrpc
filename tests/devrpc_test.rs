@@ -45,6 +45,20 @@ fn test_get_version_rpc_endpoint() {
 }
 
 #[test]
+fn test_entry_ttl_bump_extension() {
+    let mut ledger = soroban_devrpc::InMemoryLedger::new("Testnet");
+    ledger.set_entry("PERSISTENT_KEY", "DATA", 1050);
+
+    let new_ttl = ledger.bump_entry_ttl("PERSISTENT_KEY", 100).expect("Entry exists");
+    assert_eq!(new_ttl, 1100);
+
+    let entry = ledger.get_entry("PERSISTENT_KEY").unwrap();
+    assert_eq!(entry.live_until_ledger_seq, 1100);
+
+    assert!(ledger.bump_entry_ttl("UNKNOWN_KEY", 100).is_none());
+}
+
+#[test]
 fn test_ledger_entries_query() {
     let mut daemon = DevRpcDaemon::new("Standalone Testnet");
     daemon.ledger.set_entry("ENTRY_KEY_1", "VAL_XDR_DATA", 2000);
