@@ -59,6 +59,28 @@ fn test_entry_ttl_bump_extension() {
 }
 
 #[test]
+fn test_duplicate_transaction_submission_rejected() {
+    let mut daemon = DevRpcDaemon::new("Standalone Testnet");
+    let req = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(1),
+        method: "sendTransaction".to_string(),
+        params: json!({
+            "transaction": "AAAA_UNIQUE_PAYLOAD_FOR_DUP_CHECK"
+        }),
+    };
+
+    let res1 = daemon.handle_request(req.clone());
+    let r1 = res1.result.unwrap();
+    assert_eq!(r1["status"], "PENDING");
+
+    let res2 = daemon.handle_request(req);
+    let r2 = res2.result.unwrap();
+    assert_eq!(r2["status"], "DUPLICATE");
+    assert_eq!(r1["hash"], r2["hash"]);
+}
+
+#[test]
 fn test_ledger_entries_query() {
     let mut daemon = DevRpcDaemon::new("Standalone Testnet");
     daemon.ledger.set_entry("ENTRY_KEY_1", "VAL_XDR_DATA", 2000);
