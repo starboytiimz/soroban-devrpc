@@ -61,6 +61,15 @@ pub struct HealthResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VersionResponse {
+    pub app_version: String,
+    pub build_time_stamp: String,
+    pub commit_hash: String,
+    pub protocol_version: u32,
+    pub version: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkResponse {
     pub friendbot_url: Option<String>,
     pub passphrase: String,

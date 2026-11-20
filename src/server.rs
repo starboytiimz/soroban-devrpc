@@ -3,6 +3,7 @@ use crate::ledger::InMemoryLedger;
 use crate::rpc::{
     FeeStatRecord, GetEventsResponse, GetFeeStatsResponse, GetTransactionResponse, HealthResponse,
     JsonRpcRequest, JsonRpcResponse, LatestLedgerResponse, NetworkResponse, SendTransactionResponse,
+    VersionResponse,
 };
 use crate::tx::{compute_tx_hash, TransactionRecord, TransactionStatus};
 use serde_json::json;
@@ -69,6 +70,16 @@ impl DevRpcDaemon {
                     ledger_retention_window: 100_000,
                 };
                 JsonRpcResponse::success(req.id, json!(health))
+            }
+            "getVersion" => {
+                let v = VersionResponse {
+                    app_version: env!("CARGO_PKG_VERSION").to_string(),
+                    build_time_stamp: "2026-11-20T00:00:00Z".to_string(),
+                    commit_hash: "mock-commit-hash".to_string(),
+                    protocol_version: self.ledger.protocol_version,
+                    version: env!("CARGO_PKG_VERSION").to_string(),
+                };
+                JsonRpcResponse::success(req.id, json!(v))
             }
             "getNetwork" => {
                 let net = NetworkResponse {
