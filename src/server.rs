@@ -148,6 +148,16 @@ impl DevRpcDaemon {
                 match tx_xdr {
                     Some(raw_xdr) if !raw_xdr.trim().is_empty() => {
                         let hash = compute_tx_hash(raw_xdr);
+                        if self.transactions.contains_key(&hash) {
+                            let res = SendTransactionResponse {
+                                status: "DUPLICATE".to_string(),
+                                hash,
+                                latest_ledger: self.ledger.sequence,
+                                latest_ledger_close_time: "1732014000".to_string(),
+                            };
+                            return JsonRpcResponse::success(req.id, json!(res));
+                        }
+
                         let record = TransactionRecord::new(hash.clone(), raw_xdr.to_string(), self.ledger.sequence);
                         self.transactions.insert(hash.clone(), record);
 
