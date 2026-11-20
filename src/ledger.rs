@@ -45,6 +45,19 @@ impl InMemoryLedger {
         self.entries.get(key_xdr)
     }
 
+    pub fn bump_entry_ttl(&mut self, key_xdr: &str, ledgers_to_extend: u32) -> Option<u32> {
+        if let Some(entry) = self.entries.get_mut(key_xdr) {
+            let target_seq = self.sequence + ledgers_to_extend;
+            if target_seq > entry.live_until_ledger_seq {
+                entry.live_until_ledger_seq = target_seq;
+            }
+            entry.last_modified_ledger_seq = self.sequence;
+            Some(entry.live_until_ledger_seq)
+        } else {
+            None
+        }
+    }
+
     pub fn advance_ledger(&mut self) -> u32 {
         self.sequence += 1;
         self.sequence
