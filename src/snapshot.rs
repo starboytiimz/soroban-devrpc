@@ -35,6 +35,27 @@ impl LedgerSnapshot {
         }
     }
 
+    pub fn from_daemon_filtered_by_sequence(
+        daemon: &DevRpcDaemon,
+        min_seq: u32,
+        max_seq: u32,
+    ) -> Self {
+        let filtered_txs = daemon
+            .transactions
+            .iter()
+            .filter(|(_, tx)| tx.submission_ledger >= min_seq && tx.submission_ledger <= max_seq)
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+
+        Self {
+            version: 2,
+            network: daemon.ledger.network_passphrase.clone(),
+            sequence: daemon.ledger.sequence,
+            entries: daemon.ledger.entries.clone(),
+            transactions: filtered_txs,
+        }
+    }
+
     pub fn to_ledger(&self) -> InMemoryLedger {
         InMemoryLedger {
             sequence: self.sequence,
