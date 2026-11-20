@@ -81,6 +81,35 @@ fn test_duplicate_transaction_submission_rejected() {
 }
 
 #[test]
+fn test_snapshot_filtered_by_sequence() {
+    let mut daemon = DevRpcDaemon::new("Filter Testnet");
+    daemon.ledger.sequence = 1000;
+
+    let req1 = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(1),
+        method: "sendTransaction".to_string(),
+        params: json!({ "transaction": "TX_SEQ_1000" }),
+    };
+    daemon.handle_request(req1);
+
+    daemon.advance_ledger(); // 1001
+    daemon.advance_ledger(); // 1002
+
+    let req2 = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(2),
+        method: "sendTransaction".to_string(),
+        params: json!({ "transaction": "TX_SEQ_1002" }),
+    };
+    daemon.handle_request(req2);
+
+    let snap = LedgerSnapshot::from_daemon_filtered_by_sequence(&daemon, 1001, 1005);
+    assert_eq!(snap.transactions.len(), 1);
+    assert!(snap.transactions.values().any(|t| t.submission_ledger == 1002));
+}
+
+#[test]
 fn test_ledger_entries_query() {
     let mut daemon = DevRpcDaemon::new("Standalone Testnet");
     daemon.ledger.set_entry("ENTRY_KEY_1", "VAL_XDR_DATA", 2000);
