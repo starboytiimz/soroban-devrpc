@@ -85,6 +85,8 @@ pub struct LatestLedgerResponse {
     pub id: String,
     pub protocol_version: u32,
     pub sequence: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub close_time: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

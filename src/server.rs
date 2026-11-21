@@ -104,6 +104,7 @@ impl DevRpcDaemon {
                     id: format!("ledger-hash-{}", self.ledger.sequence),
                     protocol_version: self.ledger.protocol_version,
                     sequence: self.ledger.sequence,
+                    close_time: Some("2026-11-21T10:00:00Z".to_string()),
                 };
                 JsonRpcResponse::success(req.id, json!(l))
             }
