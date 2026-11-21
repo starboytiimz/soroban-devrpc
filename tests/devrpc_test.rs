@@ -352,3 +352,21 @@ fn test_example_fixtures_snapshot_loading() {
     assert_eq!(daemon.ledger.get_entry("AAAAFA==").unwrap().val_xdr, "AAAAEg==");
 }
 
+#[test]
+fn test_get_latest_ledger_response_fields() {
+    let mut daemon = DevRpcDaemon::new("Testnet");
+    let req = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(1),
+        method: "getLatestLedger".to_string(),
+        params: json!({}),
+    };
+    let res = daemon.handle_request(req);
+    let result = res.result.expect("getLatestLedger should succeed");
+    assert_eq!(result["sequence"], 1000);
+    assert_eq!(result["protocolVersion"], 21);
+    assert!(result["id"].as_str().unwrap().starts_with("ledger-hash-"));
+    assert_eq!(result["closeTime"], "2026-11-21T10:00:00Z");
+}
+
+
