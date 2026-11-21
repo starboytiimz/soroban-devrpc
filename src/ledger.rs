@@ -42,24 +42,29 @@ impl InMemoryLedger {
     }
 
     pub fn get_entry(&self, key_xdr: &str) -> Option<&LedgerEntryData> {
-        self.entries.get(key_xdr)
+        self.entries
+            .get(key_xdr)
+            .filter(|entry| entry.live_until_ledger_seq >= self.sequence)
     }
 
     pub fn bump_entry_ttl(&mut self, key_xdr: &str, ledgers_to_extend: u32) -> Option<u32> {
-        if let Some(entry) = self.entries.get_mut(key_xdr) {
-            let target_seq = self.sequence + ledgers_to_extend;
-            if target_seq > entry.live_until_ledger_seq {
-                entry.live_until_ledger_seq = target_seq;
-            }
-            entry.last_modified_ledger_seq = self.sequence;
-            Some(entry.live_until_ledger_seq)
-        } else {
-            None
+        let entry = self.entries.get_mut(key_xdr)?;
+        if entry.live_until_ledger_seq < self.sequence {
+            return None;
         }
+
+        let target_seq = self.sequence.checked_add(ledgers_to_extend)?;
+        if target_seq > entry.live_until_ledger_seq {
+            entry.live_until_ledger_seq = target_seq;
+            entry.last_modified_ledger_seq = self.sequence;
+        }
+        Some(entry.live_until_ledger_seq)
     }
 
     pub fn advance_ledger(&mut self) -> u32 {
-        self.sequence += 1;
+        self.sequence = self.sequence.saturating_add(1);
+        self.entries
+            .retain(|_, entry| entry.live_until_ledger_seq >= self.sequence);
         self.sequence
     }
 }

@@ -59,6 +59,20 @@ fn test_entry_ttl_bump_extension() {
 }
 
 #[test]
+fn test_entry_expires_after_live_until_ledger_and_cannot_be_extended() {
+    let mut ledger = soroban_devrpc::InMemoryLedger::new("Testnet");
+    ledger.set_entry("EXPIRING_KEY", "DATA", 1001);
+
+    assert_eq!(ledger.advance_ledger(), 1001);
+    assert!(ledger.get_entry("EXPIRING_KEY").is_some());
+
+    assert_eq!(ledger.advance_ledger(), 1002);
+    assert!(ledger.get_entry("EXPIRING_KEY").is_none());
+    assert!(ledger.bump_entry_ttl("EXPIRING_KEY", 100).is_none());
+    assert!(!ledger.entries.contains_key("EXPIRING_KEY"));
+}
+
+#[test]
 fn test_duplicate_transaction_submission_rejected() {
     let mut daemon = DevRpcDaemon::new("Standalone Testnet");
     let req = JsonRpcRequest {
