@@ -30,3 +30,34 @@ fn test_get_events_pagination_and_topic_filter() {
     assert_eq!(events[0]["contract_id"], "CD_TOKEN");
     assert_eq!(events[1]["contract_id"], "CA_DEX");
 }
+
+#[test]
+fn test_event_filter_wildcard_and_case_insensitivity() {
+    use soroban_devrpc::events::{ContractEvent, EventFilter};
+
+    let event = ContractEvent {
+        contract_id: "CA_TOKEN_XYZ".into(),
+        topics: vec!["transfer".into(), "G_ALICE".into(), "G_BOB".into()],
+        data: "100".into(),
+        in_successful_contract_call: true,
+        ledger: 1050,
+        id: "evt-1".into(),
+    };
+
+    // Case-insensitive contract ID match
+    let filter1 = EventFilter {
+        start_ledger: 1000,
+        contract_ids: vec!["ca_token_xyz".into()],
+        topics: vec![],
+    };
+    assert!(filter1.matches(&event));
+
+    // Wildcard topic match
+    let filter2 = EventFilter {
+        start_ledger: 1000,
+        contract_ids: vec![],
+        topics: vec![vec!["transfer".into()], vec!["*".into()]],
+    };
+    assert!(filter2.matches(&event));
+}
+
