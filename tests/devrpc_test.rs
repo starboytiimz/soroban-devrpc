@@ -369,4 +369,15 @@ fn test_get_latest_ledger_response_fields() {
     assert_eq!(result["closeTime"], "2026-11-21T10:00:00Z");
 }
 
+#[test]
+fn test_rpc_reference_docs_completeness() {
+    let doc = include_str!("../docs/RPC_REFERENCE.md");
+    assert!(doc.contains("getHealth"));
+    assert!(doc.contains("getLatestLedger"));
+    assert!(doc.contains("sendTransaction"));
+    assert!(doc.contains("simulateTransaction"));
+    assert!(doc.contains("getFeeStats"));
+}
+
+
 
