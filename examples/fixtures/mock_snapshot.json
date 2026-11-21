@@ -1,0 +1,13 @@
+{
+  "sequence": 100,
+  "protocol_version": 22,
+  "network_passphrase": "Test SDF Network ; September 2015",
+  "entries": [
+    {
+      "key": "AAAAFA==",
+      "val": "AAAAEg==",
+      "live_until_ledger_seq": 1500
+    }
+  ],
+  "transaction_history": []
+}
