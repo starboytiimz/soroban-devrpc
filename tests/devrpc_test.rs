@@ -73,6 +73,32 @@ fn test_entry_expires_after_live_until_ledger_and_cannot_be_extended() {
 }
 
 #[test]
+fn test_reset_clears_simulated_state_and_preserves_network() {
+    let mut daemon = DevRpcDaemon::new("Testnet");
+    daemon.ledger.protocol_version = 22;
+    daemon.ledger.sequence = 4242;
+    daemon.ledger.set_entry("KEY", "VALUE", 5000);
+    daemon.record_event("CA_CONTRACT", vec!["transfer".into()], "10");
+    daemon.handle_request(JsonRpcRequest {
+        jsonrpc: "2.0".into(),
+        id: json!(1),
+        method: "sendTransaction".into(),
+        params: json!({"transaction": "UNIQUE_RESET_TEST_TX"}),
+    });
+    assert!(!daemon.transactions.is_empty());
+    assert!(!daemon.events.is_empty());
+
+    daemon.reset();
+
+    assert_eq!(daemon.ledger.sequence, 1000);
+    assert_eq!(daemon.ledger.protocol_version, 22);
+    assert_eq!(daemon.ledger.network_passphrase, "Testnet");
+    assert!(daemon.ledger.entries.is_empty());
+    assert!(daemon.transactions.is_empty());
+    assert!(daemon.events.is_empty());
+}
+
+#[test]
 fn test_duplicate_transaction_submission_rejected() {
     let mut daemon = DevRpcDaemon::new("Standalone Testnet");
     let req = JsonRpcRequest {

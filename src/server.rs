@@ -24,6 +24,16 @@ impl DevRpcDaemon {
         }
     }
 
+    /// Clear simulated ledger and request history while retaining network configuration.
+    pub fn reset(&mut self) {
+        let passphrase = self.ledger.network_passphrase.clone();
+        let protocol_version = self.ledger.protocol_version;
+        self.ledger = InMemoryLedger::new(passphrase);
+        self.ledger.protocol_version = protocol_version;
+        self.transactions.clear();
+        self.events.clear();
+    }
+
     pub fn record_event(
         &mut self,
         contract_id: impl Into<String>,
