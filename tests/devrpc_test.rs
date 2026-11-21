@@ -339,3 +339,16 @@ fn test_snapshot_with_transaction_history() {
     let new_daemon = restored.to_daemon();
     assert!(new_daemon.transactions.contains_key(&hash));
 }
+
+#[test]
+fn test_example_fixtures_snapshot_loading() {
+    let fixture_str = include_str!("../examples/fixtures/mock_snapshot.json");
+    let snapshot = LedgerSnapshot::from_json(fixture_str).expect("Valid fixture");
+    assert_eq!(snapshot.sequence, 100);
+    assert_eq!(snapshot.version, 1);
+
+    let daemon = snapshot.to_daemon();
+    assert_eq!(daemon.ledger.sequence, 100);
+    assert_eq!(daemon.ledger.get_entry("AAAAFA==").unwrap().val_xdr, "AAAAEg==");
+}
+
