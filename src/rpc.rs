@@ -53,6 +53,7 @@ pub struct JsonRpcError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HealthResponse {
     pub status: String,
     pub latest_ledger: u32,
@@ -61,6 +62,7 @@ pub struct HealthResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VersionResponse {
     pub app_version: String,
     pub build_time_stamp: String,
@@ -70,6 +72,7 @@ pub struct VersionResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NetworkResponse {
     pub friendbot_url: Option<String>,
     pub passphrase: String,
@@ -77,6 +80,7 @@ pub struct NetworkResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LatestLedgerResponse {
     pub id: String,
     pub protocol_version: u32,

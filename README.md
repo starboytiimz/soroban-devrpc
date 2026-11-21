@@ -6,12 +6,12 @@ A lightweight, zero-Docker standalone Soroban JSON-RPC mock and ledger state sna
 
 Running full Stellar Quickstart Docker containers during local development and continuous integration can introduce container overhead, slow startup times, and complex environment setups. 
 
-`soroban-devrpc` is a fast, standalone mock RPC daemon designed specifically for testing Soroban client applications, contract bindings, and frontend dApps without Docker dependencies.
+`soroban-devrpc` is a local mock RPC daemon for testing basic client connectivity and deterministic application flows without Docker. It is not a Stellar Core replacement: transaction execution and several RPC responses are simulated, and contract calls are not executed by Soroban host.
 
 ### Key Capabilities
 
-- **Zero-Docker Architecture**: Runs as a lightweight local binary or test fixture with near-instant startup (<50ms).
-- **Core JSON-RPC Methods**: Implements standard Soroban RPC methods:
+- **Local HTTP JSON-RPC endpoint**: Binds to `127.0.0.1` by default and runs as a lightweight local binary.
+- **Mock RPC methods**: Provides deterministic responses for:
   - `getHealth`
   - `getNetwork`
   - `getLatestLedger`
@@ -19,8 +19,10 @@ Running full Stellar Quickstart Docker containers during local development and c
   - `simulateTransaction`
   - `sendTransaction`
   - `getTransaction`
-- **State Snapshots**: Save and restore ledger state snapshots in portable JSON format to establish clean, reproducible test baselines.
+- **Library snapshots**: Save and restore ledger snapshots in portable JSON format through the Rust API.
 - **Deterministic Simulation**: Simulates contract execution returns, authorization requirements, and resource fee calculations for offline client testing.
+
+The JavaScript SDK smoke example verifies only `getHealth` and `getNetwork`. Other methods use mock data and are not yet validated for full SDK or Stellar RPC specification compatibility.
 
 ## Getting Started
 
@@ -34,23 +36,30 @@ cargo install --path .
 ### Running the Daemon
 
 ```bash
-soroban-devrpc --port 8000
+cargo run -- --port 8000
 ```
 
-### State Snapshots
+The server is available at `http://127.0.0.1:8000/soroban-rpc`.
 
-Load a snapshot of pre-populated ledger entries:
+### JavaScript SDK smoke
+
+With the daemon running in another terminal:
 
 ```bash
-soroban-devrpc --snapshot fixtures/vault_state.json --port 8000
+cd examples/js_client
+npm ci
+npm run smoke
 ```
+
+This uses the pinned `@stellar/stellar-sdk` and makes real HTTP JSON-RPC requests to the local mock.
 
 ## Roadmap
 
-- [ ] Core JSON-RPC server and in-memory ledger entry storage
-- [ ] Transaction simulation engine for contract execution
+- [x] Local HTTP JSON-RPC server and in-memory ledger entry storage
+- [ ] Soroban-host-backed transaction simulation and full RPC schema compatibility
 - [ ] Snapshot export and import utilities
-- [ ] Integration harnesses for JavaScript/TypeScript and Rust SDKs
+- [x] JavaScript SDK smoke for health and network calls
+- [ ] Broader JavaScript and Rust SDK integration coverage
 
 ## License
 

@@ -1,0 +1,11 @@
+{
+  "name": "soroban-devrpc-sdk-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "smoke": "node client.mjs"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "17.4.0"
+  }
+}

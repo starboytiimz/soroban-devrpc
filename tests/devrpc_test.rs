@@ -15,7 +15,7 @@ fn test_get_health_and_network() {
     assert_eq!(res.jsonrpc, "2.0");
     let result = res.result.unwrap();
     assert_eq!(result["status"], "healthy");
-    assert_eq!(result["latest_ledger"], 1000);
+    assert_eq!(result["latestLedger"], 1000);
 
     let req_net = JsonRpcRequest {
         jsonrpc: "2.0".to_string(),
@@ -39,9 +39,9 @@ fn test_get_version_rpc_endpoint() {
     };
     let res = daemon.handle_request(req);
     let result = res.result.expect("getVersion should succeed");
-    assert_eq!(result["protocol_version"], 21);
+    assert_eq!(result["protocolVersion"], 21);
     assert!(result["version"].as_str().is_some());
-    assert_eq!(result["commit_hash"], "mock-commit-hash");
+    assert_eq!(result["commitHash"], "mock-commit-hash");
 }
 
 #[test]

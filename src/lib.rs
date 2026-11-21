@@ -1,4 +1,5 @@
 pub mod events;
+pub mod http;
 pub mod ledger;
 pub mod rpc;
 pub mod server;
