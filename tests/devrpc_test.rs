@@ -407,5 +407,21 @@ fn test_get_ledger_entry_ttl_rpc() {
     assert!(res_bad.error.is_some());
 }
 
+#[test]
+fn test_request_timeout_error_serialization() {
+    use soroban_devrpc::rpc::{JsonRpcError, JsonRpcResponse};
+
+    let timeout_resp = JsonRpcResponse::timeout(json!("timeout-req"), "Request deadline exceeded (5000ms)");
+    assert_eq!(timeout_resp.jsonrpc, "2.0");
+    assert!(timeout_resp.result.is_none());
+
+    let err = timeout_resp.error.as_ref().expect("timeout response must have error");
+    assert_eq!(err.code, JsonRpcError::SERVER_TIMEOUT);
+    assert!(err.message.contains("deadline exceeded"));
+
+    let json_bytes = serde_json::to_string(&timeout_resp).unwrap();
+    assert!(json_bytes.contains("-32001"));
+}
+
 
 

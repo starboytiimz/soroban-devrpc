@@ -104,6 +104,4 @@ fn test_event_cursor_pagination() {
     assert_eq!(p2[0].id, "evt-03");
     assert_eq!(c2, Some("evt-03".into()));
 }
-    assert!(filter2.matches(&event));
-}
 
