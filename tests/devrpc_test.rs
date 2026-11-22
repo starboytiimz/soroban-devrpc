@@ -379,5 +379,33 @@ fn test_rpc_reference_docs_completeness() {
     assert!(doc.contains("getFeeStats"));
 }
 
+#[test]
+fn test_get_ledger_entry_ttl_rpc() {
+    let mut daemon = DevRpcDaemon::new("Testnet");
+    daemon.ledger.set_entry("ENTRY_A", "DATA_A", 1200);
+
+    let req = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(10),
+        method: "getLedgerEntryTTL".to_string(),
+        params: json!({"key": "ENTRY_A"}),
+    };
+    let res = daemon.handle_request(req);
+    let result = res.result.expect("getLedgerEntryTTL should succeed");
+    assert_eq!(result["liveUntilLedgerSeq"], 1200);
+    assert_eq!(result["remainingLedgers"], 200);
+    assert_eq!(result["latestLedger"], 1000);
+
+    // Non-existent key
+    let req_bad = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        id: json!(11),
+        method: "getLedgerEntryTTL".to_string(),
+        params: json!({"key": "NON_EXISTENT"}),
+    };
+    let res_bad = daemon.handle_request(req_bad);
+    assert!(res_bad.error.is_some());
+}
+
 
 
