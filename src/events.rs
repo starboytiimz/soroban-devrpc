@@ -45,4 +45,28 @@ impl EventFilter {
         }
         true
     }
+
+    pub fn paginate<'a>(
+        events: &'a [ContractEvent],
+        cursor: Option<&str>,
+        limit: Option<usize>,
+    ) -> (&'a [ContractEvent], Option<String>) {
+        let start_idx = match cursor {
+            Some(c) => events
+                .iter()
+                .position(|e| e.id == c)
+                .map(|pos| pos + 1)
+                .unwrap_or(0),
+            None => 0,
+        };
+        let effective_events = if start_idx >= events.len() {
+            &[]
+        } else {
+            &events[start_idx..]
+        };
+        let max_items = limit.unwrap_or(100).min(effective_events.len());
+        let slice = &effective_events[..max_items];
+        let next_cursor = slice.last().map(|e| e.id.clone());
+        (slice, next_cursor)
+    }
 }
