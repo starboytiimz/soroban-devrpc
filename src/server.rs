@@ -136,6 +136,28 @@ impl DevRpcDaemon {
                     None => JsonRpcResponse::error(req.id, -32602, "Missing 'keys' parameter in getLedgerEntries"),
                 }
             }
+            "getLedgerEntryTTL" => {
+                let key = req.params.get("key").and_then(|k| k.as_str());
+                match key {
+                    Some(k) => {
+                        if let Some(entry) = self.ledger.get_entry(k) {
+                            let remaining = entry.live_until_ledger_seq.saturating_sub(self.ledger.sequence);
+                            JsonRpcResponse::success(
+                                req.id,
+                                json!({
+                                    "key": entry.key_xdr,
+                                    "liveUntilLedgerSeq": entry.live_until_ledger_seq,
+                                    "remainingLedgers": remaining,
+                                    "latestLedger": self.ledger.sequence
+                                }),
+                            )
+                        } else {
+                            JsonRpcResponse::error(req.id, -32602, format!("Entry not found for key: {}", k))
+                        }
+                    }
+                    None => JsonRpcResponse::error(req.id, -32602, "Missing 'key' parameter in getLedgerEntryTTL"),
+                }
+            }
             "simulateTransaction" => {
                 // Mock execution simulation return
                 JsonRpcResponse::success(
