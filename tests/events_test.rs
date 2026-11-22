@@ -61,3 +61,49 @@ fn test_event_filter_wildcard_and_case_insensitivity() {
     assert!(filter2.matches(&event));
 }
 
+#[test]
+fn test_event_cursor_pagination() {
+    use soroban_devrpc::events::{ContractEvent, EventFilter};
+
+    let events = vec![
+        ContractEvent {
+            contract_id: "C1".into(),
+            topics: vec![],
+            data: "".into(),
+            in_successful_contract_call: true,
+            ledger: 1001,
+            id: "evt-01".into(),
+        },
+        ContractEvent {
+            contract_id: "C2".into(),
+            topics: vec![],
+            data: "".into(),
+            in_successful_contract_call: true,
+            ledger: 1002,
+            id: "evt-02".into(),
+        },
+        ContractEvent {
+            contract_id: "C3".into(),
+            topics: vec![],
+            data: "".into(),
+            in_successful_contract_call: true,
+            ledger: 1003,
+            id: "evt-03".into(),
+        },
+    ];
+
+    // Page 1: limit 2, no cursor
+    let (p1, c1) = EventFilter::paginate(&events, None, Some(2));
+    assert_eq!(p1.len(), 2);
+    assert_eq!(p1[0].id, "evt-01");
+    assert_eq!(c1, Some("evt-02".into()));
+
+    // Page 2: cursor from p1
+    let (p2, c2) = EventFilter::paginate(&events, c1.as_deref(), Some(2));
+    assert_eq!(p2.len(), 1);
+    assert_eq!(p2[0].id, "evt-03");
+    assert_eq!(c2, Some("evt-03".into()));
+}
+    assert!(filter2.matches(&event));
+}
+
