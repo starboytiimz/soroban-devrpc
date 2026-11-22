@@ -42,6 +42,15 @@ impl JsonRpcResponse {
             }),
         }
     }
+
+    pub fn timeout(id: Value, message: impl Into<String>) -> Self {
+        Self {
+            jsonrpc: "2.0".to_string(),
+            id,
+            result: None,
+            error: Some(JsonRpcError::timeout(message)),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,6 +59,18 @@ pub struct JsonRpcError {
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<Value>,
+}
+
+impl JsonRpcError {
+    pub const SERVER_TIMEOUT: i32 = -32001;
+
+    pub fn timeout(message: impl Into<String>) -> Self {
+        Self {
+            code: Self::SERVER_TIMEOUT,
+            message: message.into(),
+            data: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
